@@ -1,4 +1,5 @@
 import pygame
+from env.Food import Food
 
 class Grid:
     def __init__(self, rows, cols, cell_size, offset=(0,0)):
@@ -7,6 +8,7 @@ class Grid:
         self.cell_size = cell_size
         self.offset_x, self.offset_y = offset
         self.grid = [[0 for _ in range(cols)] for _ in range(rows)]
+        self.food_cells = {}
 
     def draw(self, screen):
         for row in range(self.rows):
@@ -19,6 +21,10 @@ class Grid:
                 )
                 pygame.draw.rect(screen, (200, 200, 200), rect, 1)  # draw cell borders
 
+                # Check for food and draw    
+                if (row, col) in self.food_cells:
+                    self.food_cells[(row, col)].draw(screen, self.cell_size, self.offset_x, self.offset_y)
+
     def update_cell(self, row, col, value):
         if 0 <= row < self.rows and 0 <= col < self.cols:
             self.grid[row][col] = value
@@ -29,3 +35,6 @@ class Grid:
         if 0 <= row < self.rows and 0 <= col < self.cols:
             return row, col
         return None
+    
+    def place_food(self, row, col):
+        self.food_cells[(row, col)] = Food(row, col)
