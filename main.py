@@ -17,24 +17,28 @@ pygame.display.set_caption('GeeksforGeeks')
 # if game is running and starts clock
 running = True
 clock = pygame.time.Clock()
-fps = 10
+fps = 5
 
 # set up pheromone map
 pheromone_map = PheromoneMap(rows=50, cols=50, cell_size=10)
 
-# set up grid and ants
+# set up grid
 grid = Grid(rows=50, cols=50, cell_size=10)
-ants = [
-    Ant(pheromone_map=pheromone_map, row=20, col=3),
-    Ant(pheromone_map=pheromone_map, row=7, col=7),
-    Ant(pheromone_map=pheromone_map, row=0, col=0)
-]
+
+# place nest
+nest = grid.place_nest(10,10)
 
 # place food 
 grid.place_food(3, 5)
 grid.place_food(4, 6)
 grid.place_food(2, 8)
 
+# place ants 
+ants = [
+    Ant(pheromone_map=pheromone_map, row=20, col=3, nest=nest),
+    Ant(pheromone_map=pheromone_map, row=7, col=7, nest=nest),
+    Ant(pheromone_map=pheromone_map, row=0, col=0, nest=nest)
+]
 
 # Game loop
 # keep game running till running is true
