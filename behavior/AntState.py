@@ -1,4 +1,5 @@
 import random
+from env.Food import Food
 
 class AntState:
     def update(self, ant, grid):
@@ -6,14 +7,21 @@ class AntState:
 
 class SearchingState(AntState):
     def update(self, ant, grid):
-        for r, c in ant.vision(grid):  # Use Ant's vision method
+        ant.pheromone_map.deposit(ant.row, ant.col, 0.5, pheromone_type="search")
+        for r, c in ant.vision(grid):
+            #test
+            ant.perception(grid)
+
             if (r, c) in grid.food_cells:
                 print("food found")
                 # Food found
+                # need to fix so that just because food is in vision dosent mean it gets picked up automatically, add pathfinding to food so its in a 1 block radius around then pick up
+                if grid.food_cells[(r, c)].take():
+                    grid.remove_food(r, c)
+                    print("food gone at", r, c)
                 ant.carrying_food = True
-                grid.remove_food(r, c)
-                ant.pheromone_map.deposit(ant.row, ant.col, 0.5)
                 ant.set_state(ReturningState())
+
                 return  # Exit early once food is found
 
         # If no food found, move randomly
@@ -24,13 +32,14 @@ class SearchingState(AntState):
 class ReturningState(AntState):
     def update(self, ant, grid):
         # 1. Drop pheromone at current position
-        ant.pheromone_map.deposit(ant.row, ant.col, 0.3)
+        ant.pheromone_map.deposit(ant.row, ant.col, 0.3, pheromone_type="return")
 
         # debug
         if ant.nest is None:
             assert False, "Ant has no nest assigned!"
 
         # 2. Move toward the nest
+        # USE HELPER FUNCTIONS
         dr = dc = 0
         if ant.row < ant.nest.row:
             dr = 1
@@ -48,3 +57,4 @@ class ReturningState(AntState):
         if (ant.row, ant.col) == (ant.nest.row, ant.nest.col):
             ant.carrying_food = False
             ant.set_state(SearchingState())
+

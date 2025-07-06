@@ -1,6 +1,8 @@
 import pygame
 from env.Food import Food
 from env.Nest import Nest
+from env.PheromoneMap import PheromoneMap
+from env.EntityLayer import EntityLayer
 
 class Grid:
     def __init__(self, rows, cols, cell_size, offset=(0,0)):
@@ -11,6 +13,7 @@ class Grid:
         self.grid = [[0 for _ in range(cols)] for _ in range(rows)]
         self.food_cells = {}
         self.nest_cells = {}
+        self.entity_layer = EntityLayer(rows, cols)
 
     def draw(self, screen):
         for row in range(self.rows):
@@ -21,7 +24,7 @@ class Grid:
                     self.cell_size,
                     self.cell_size
                 )
-                pygame.draw.rect(screen, (200, 200, 200), rect, 1)  
+                #pygame.draw.rect(screen, (200, 200, 200), rect, 1)  
 
                 # Check for food and draw    
                 if (row, col) in self.food_cells:
@@ -40,9 +43,10 @@ class Grid:
             return row, col
         return None
     
-    def place_food(self, row, col):
+    def place_food(self, row, col, pheromone_map):
         food = Food(row, col)
         self.food_cells[(row, col)] = food
+        food.emit_scent(pheromone_map)
         return food
     
     def remove_food(self, row, col):
