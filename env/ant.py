@@ -3,6 +3,7 @@ import pygame
 from env.EntityLayer import EntityLayer
 from env.PheromoneMap import PheromoneMap
 from behavior.AntState import SearchingState
+import time
 
 class Ant():
     def __init__(self, pheromone_map, row, col, nest, vision_radius=3, draw=False):
@@ -76,7 +77,7 @@ class Ant():
                 search_level = cell.get("search", 0.0)
                 return_level = cell.get("return", 0.0)
                 food_smell_level = cell.get("food_smell", 0.0)
-
+                nest_relative_position = [self.nest.row - r, self.nest.col - c]
                 ant_present = 0
                 ant_carrying_food = 0
                 entities = grid.entity_layer.get(r, c)
@@ -87,8 +88,9 @@ class Ant():
                         if entity.carrying_food:
                             ant_carrying_food += 1
 
-                observation_vector.extend([search_level, return_level, food_smell_level, ant_present, ant_carrying_food])
+                observation_vector.extend([search_level, return_level, food_smell_level, ant_present, ant_carrying_food, nest_relative_position])
                 # Print line by line
-                # print(f"Cell ({r}, {c}): search={search_level:.3f}, return={return_level:.3f}, food_smell={food_smell_level:.3f}, ants_present={ant_present}")
+                if time.time() % 2 < 0.05:
+                    print(f"Cell ({r}, {c}): search={search_level:.3f}, return={return_level:.3f}, food_smell={food_smell_level:.3f}, ants_present={ant_present}, ant_carrying_food={ant_carrying_food}, nest_relative_postion{nest_relative_position}")
 
         return observation_vector

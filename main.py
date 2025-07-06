@@ -2,6 +2,7 @@ import pygame
 from env.Grid import Grid
 from env.Ant import Ant
 from env.PheromoneMap import PheromoneMap
+import random
 
 # initializing imported module
 pygame.init()
@@ -20,22 +21,27 @@ running = True
 clock = pygame.time.Clock()
 fps = 10
 
+# rows, cols, cellsize
+rows=100
+cols=100
+cell_size=10
 # set up pheromone map
-pheromone_map = PheromoneMap(rows=100, cols=100, cell_size=10)
+pheromone_map = PheromoneMap(rows, cols, cell_size)
 
 # set up grid
-grid = Grid(rows=100, cols=100, cell_size=10)
+grid = Grid(rows, cols, cell_size)
 
 # place nest
 nest = grid.place_nest(50,50)
 
-# place food 
-# grid.place_food(40, 50, pheromone_map)
-# grid.place_food(40, 6, pheromone_map)
-grid.place_food(20, 8, pheromone_map)
+# place food
+for _ in range(10):
+    row = random.randint(1, rows -10)
+    col = random.randint(1, cols -10)
+    grid.place_food(row, col, pheromone_map)
 
 # create ants (without specifying position yet)
-ants_to_deploy = [Ant(pheromone_map, 0, 0, nest) for _ in range(3)]
+ants_to_deploy = [Ant(pheromone_map, 0, 0, nest) for _ in range(1)]
 
 # add ants to nest
 for ant in ants_to_deploy:
@@ -44,7 +50,7 @@ for ant in ants_to_deploy:
 for ant in ants_to_deploy:
     grid.entity_layer.add(ant, nest.row, nest.col)
 
-print("All positions:", grid.entity_layer.positions)
+# print("All positions:", grid.entity_layer.positions)
 print("Total positions:", len(grid.entity_layer.positions))
 
 
