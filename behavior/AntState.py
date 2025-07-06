@@ -34,7 +34,7 @@ import random
 
 class ReturningState(AntState):
     def update(self, ant, grid):
-        ant.pheromone_map.deposit(ant.row, ant.col, 0.3, pheromone_type="return")
+        ant.pheromone_map.deposit(ant.row, ant.col, 0.8, pheromone_type="return")
 
         if ant.nest is None:
             assert False, "Ant has no nest assigned!"

@@ -72,25 +72,46 @@ class Ant():
                 if r < 0 or c < 0 or r >= grid.rows or c >= grid.cols:
                     continue
                 
-                # pheormone data
+                # MAX values
+                max_ants_per_cell = 4
+                MAX_PHEROMONE_LEVEL = 3
+
+                # pheromones (already normalized)
                 cell = self.pheromone_map.map[r][c]
-                search_level = cell.get("search", 0.0)
-                return_level = cell.get("return", 0.0)
-                food_smell_level = cell.get("food_smell", 0.0)
-                nest_relative_position = [self.nest.row - r, self.nest.col - c]
+                search_level = min(cell.get("search", 0.0) / MAX_PHEROMONE_LEVEL, 1.0)
+                return_level = min(cell.get("return", 0.0) / MAX_PHEROMONE_LEVEL, 1.0)
+                food_smell_level = min(cell.get("food_smell", 0.0) / MAX_PHEROMONE_LEVEL, 1.0)
+
+                # nest position, normalized to 1 if close and 0 if far
+                dr = 1- abs(self.nest.row - r) /grid.row
+                dc = 1- abs(self.nest.col - c) /grid.col
+                
+                # ant presence
                 ant_present = 0
                 ant_carrying_food = 0
                 entities = grid.entity_layer.get(r, c)
-                
+
                 for entity in entities:
                     if isinstance(entity, Ant) and entity is not self:
                         ant_present += 1
                         if entity.carrying_food:
                             ant_carrying_food += 1
 
-                observation_vector.extend([search_level, return_level, food_smell_level, ant_present, ant_carrying_food, nest_relative_position])
+                norm_ant_present = min(ant_present / max_ants_per_cell, 1.0)
+                norm_ant_carrying_food = min(ant_carrying_food / max_ants_per_cell, 1.0)
+
+                observation_vector.extend([
+                    search_level,
+                    return_level,
+                    food_smell_level,
+                    norm_ant_present,
+                    norm_ant_carrying_food,
+                    dr,
+                    dc
+                ])
+
                 # Print line by line
                 if time.time() % 2 < 0.05:
-                    print(f"Cell ({r}, {c}): search={search_level:.3f}, return={return_level:.3f}, food_smell={food_smell_level:.3f}, ants_present={ant_present}, ant_carrying_food={ant_carrying_food}, nest_relative_postion{nest_relative_position}")
+                    print(f"Cell ({r}, {c}): search={search_level:.3f}, return={return_level:.3f}, food_smell={food_smell_level:.3f}, ants_present={norm_ant_present}, ant_carrying_food={norm_ant_carrying_food}, nest_relative_postion{dr, dc}")
 
         return observation_vector

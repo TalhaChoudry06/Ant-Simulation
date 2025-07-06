@@ -1,7 +1,7 @@
 import pygame
 
 class Food:
-    def __init__(self, row, col, amount=2):
+    def __init__(self, row, col, amount=5):
         self.row = row
         self.col = col
         self.amount = amount

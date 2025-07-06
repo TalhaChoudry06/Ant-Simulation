@@ -41,7 +41,7 @@ for _ in range(10):
     grid.place_food(row, col, pheromone_map)
 
 # create ants (without specifying position yet)
-ants_to_deploy = [Ant(pheromone_map, 0, 0, nest) for _ in range(1)]
+ants_to_deploy = [Ant(pheromone_map, 0, 0, nest) for _ in range(10)]
 
 # add ants to nest
 for ant in ants_to_deploy:
