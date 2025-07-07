@@ -4,6 +4,8 @@ from env.EntityLayer import EntityLayer
 from env.PheromoneMap import PheromoneMap
 from behavior.AntState import SearchingState
 import time
+from ai.AntPolicyNet import AntPolicyNet
+from constants import DIRECTIONS
 
 class Ant():
     def __init__(self, pheromone_map, row, col, nest, vision_radius=3, draw=False):
@@ -14,12 +16,18 @@ class Ant():
         self.vision_radius = vision_radius
         self.carrying_food = False
         self.state = SearchingState()  
+        self.policy_net = None
 
     def set_state(self, new_state):
         self.state = new_state
 
 
     def update(self, grid):
+        obs = self.perception(grid)
+        if self.policy_net is None:
+            input_size = len(obs)
+            self.policy_net = AntPolicyNet(input_size=input_size, output_size=8)
+
         self.state.update(self, grid)
         
     def draw(self, screen, cell_size):
@@ -70,6 +78,15 @@ class Ant():
         for r in range(self.row - self.vision_radius, self.row + self.vision_radius + 1):
             for c in range(self.col - self.vision_radius, self.col + self.vision_radius + 1):
                 if r < 0 or c < 0 or r >= grid.rows or c >= grid.cols:
+                    observation_vector.extend([
+                        0.0,  # search_level
+                        0.0,  # return_level
+                        0.0,  # food_smell_level
+                        0.0,  # norm_ant_present
+                        0.0,  # norm_ant_carrying_food
+                        0,    # dr
+                        0     # dc
+                    ])
                     continue
                 
                 # MAX values
@@ -83,8 +100,8 @@ class Ant():
                 food_smell_level = min(cell.get("food_smell", 0.0) / MAX_PHEROMONE_LEVEL, 1.0)
 
                 # nest position, normalized to 1 if close and 0 if far
-                dr = 1- abs(self.nest.row - r) /grid.row
-                dc = 1- abs(self.nest.col - c) /grid.col
+                dr = 1- abs(self.nest.row - r) /grid.rows
+                dc = 1- abs(self.nest.col - c) /grid.cols
                 
                 # ant presence
                 ant_present = 0
@@ -110,8 +127,19 @@ class Ant():
                     dc
                 ])
 
-                # Print line by line
-                if time.time() % 2 < 0.05:
-                    print(f"Cell ({r}, {c}): search={search_level:.3f}, return={return_level:.3f}, food_smell={food_smell_level:.3f}, ants_present={norm_ant_present}, ant_carrying_food={norm_ant_carrying_food}, nest_relative_postion{dr, dc}")
+                # # Print line by line
+                # if time.time() % 2 < 0.05:
+                #     print(f"Cell ({r}, {c}): search={search_level:.3f}, return={return_level:.3f}, food_smell={food_smell_level:.3f}, ants_present={norm_ant_present}, ant_carrying_food={norm_ant_carrying_food}, nest_relative_postion{dr, dc}")
 
         return observation_vector
+
+    def get_valid_directions(self, grid):
+        valid = []
+        for dr, dc in DIRECTIONS:
+            new_row = self.row + dr
+            new_col = self.col + dc
+            if 0 <= new_row < grid.rows and 0 <= new_col < grid.cols:
+                valid.append(True)
+            else:
+                valid.append(False)
+        return valid
